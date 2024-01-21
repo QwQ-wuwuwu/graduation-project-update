@@ -10,9 +10,9 @@ import com.example.repository.ProcessRepository;
 import com.example.repository.StudentRepository;
 import com.example.repository.TeacherRepository;
 import com.example.repository.UserRepository;
-import com.example.vo.Code;
 import lombok.RequiredArgsConstructor;
 import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import reactor.core.publisher.Flux;
@@ -62,36 +62,30 @@ public class AdminService {
         return processRepository.deleteProcessBy();
     }
     @Transactional
-    public Mono<Void> saveStudents(List<Student> students) {
+    public Mono<Void> postStudents(List<Student> students,int role) {
         ArrayList<User> users = new ArrayList<>();
         for (Student student : students) {
             User user = new User();
-
             user.setNumber(student.getNumber());
             user.setPassword(password.passwordEncoder().encode(student.getNumber()));
-            user.setRole(User.ROLE_STUDENT);
-
+            user.setRole(role);
             users.add(user);
         }
-        userRepository.saveAll(users).collectList().block();
+        userRepository.saveAll(users).collectList().block(); // 必须阻塞
         return studentRepository.saveAll(students).then();
     }
     @Transactional
-    public Mono<Void> saveTeachers(List<Teacher> teachers) {
-        ArrayList<User> list = new ArrayList<>();
+    @CacheEvict(value = "teachersCache", allEntries = true)
+    public Mono<Void> postTeachers(List<Teacher> teachers, int role) {
+        ArrayList<User> users = new ArrayList<>();
         for (Teacher teacher : teachers) {
             User user = new User();
-            String userNumber = teacher.getNumber();
-            user.setNumber(userNumber);
-            user.setPassword(password.passwordEncoder().encode(userNumber));
-            user.setRole(User.ROLE_TEACHER);
-
-            list.add(user);
+            user.setNumber(teacher.getNumber());
+            user.setPassword(password.passwordEncoder().encode(teacher.getNumber()));
+            user.setRole(role);
+            users.add(user);
         }
-        System.out.println(list);
-        return userRepository.saveAll(list)
-                .collectList()
-                .thenReturn(teacherRepository.saveAll(teachers))
-                .then();
+        userRepository.saveAll(users).collectList().block();
+        return teacherRepository.saveAll(teachers).then();
     }
 }

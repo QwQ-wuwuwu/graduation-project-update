@@ -39,6 +39,7 @@ create table if not exists `process` ( /*开题答辩/期中检查/毕业答辩/
     id char(19) primary key ,
     process_name varchar(50) not null,
     items json null comment '[{"name","number","score","detail"}]',/*打分项目，编号，分值比例，细节描述*/
+    confirm BIT null,
     insert_time datetime not null default current_timestamp,
     update_time datetime not null default current_timestamp on update current_timestamp
     );
@@ -56,9 +57,9 @@ create table if not exists `process_score` ( /*过程得分情况*/
     );
 create table if not exists `file` (
     id char(19) primary key ,
-    student_number char(19) not null,
-    detail varchar(100) not null, /*开题或毕设报告*/
-    process_id char(19) not null ,/*表明属于哪个过程*/
+    student_number char(10) null,
+    detail varchar(100) null, /*开题或毕设报告*/
+    process_id char(19) null ,/*表明属于哪个过程*/
     insert_time datetime not null default current_timestamp,
     update_time datetime not null default current_timestamp on update current_timestamp,
     index(student_number),

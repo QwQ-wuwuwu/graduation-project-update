@@ -40,12 +40,11 @@ public class ExceptionHandler implements WebExceptionHandler { // 用于将XExce
 
         return response.writeWith(Flux.just(wrap));
 
-/*        response.getCookies(); // 获取cookie
+        /*response.getCookies(); // 获取cookie
         response.getHeaders(); // 获取响应头
         response.getStatusCode(); // 获取响应状态码
         response.bufferFactory(); // buffer工厂
         response.writeWith(); // 把xxx写到响应页面
-        response.setComplete(); // 响应结束
-        */
+        response.setComplete(); // 响应结束*/
     }
 }

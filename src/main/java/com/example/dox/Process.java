@@ -23,6 +23,7 @@ public class Process {
     private String id;
     private String processName;
     private String items;
+    private Boolean confirm;
     @ReadOnlyProperty
     @JsonIgnore
     private LocalDateTime insertTime;

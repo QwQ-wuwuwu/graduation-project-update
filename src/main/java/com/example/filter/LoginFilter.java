@@ -52,7 +52,6 @@ public class LoginFilter implements WebFilter { // WebFlux框架中的filter本�
                     if (e instanceof XException) {
                         return responseHelper.response(((XException)e).getCode(), exchange);
                     }
-                    // 处理其他类型的异常或返回默认错误响应
                     return responseHelper.response(Code.JSONERROR, exchange);
                 });
     }
