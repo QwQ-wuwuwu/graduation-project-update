@@ -24,7 +24,7 @@ public class ExceptionHandler implements WebExceptionHandler { // 用于将XExce
     // 比ExceptionController方法先执行
     private final ObjectMapper objectMapper;
     @SneakyThrows // 不必显式的try-catch
-    @NonNull // 不应该维空
+    @NonNull // 不应该为空
     @Override
     public Mono<Void> handle(ServerWebExchange exchange, Throwable ex) {
         Integer code = Code.ERROR;
