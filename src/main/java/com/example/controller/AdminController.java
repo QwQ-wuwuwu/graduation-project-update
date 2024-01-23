@@ -55,9 +55,9 @@ public class AdminController {
                 .flatMap(r -> userService.listProcess())
                 .map(ps -> ResultVo.success(Code.SUCCESS, Map.of("processes",ps)));
     }
-    @DeleteMapping("/process")
-    public Mono<ResultVo> deleteProcess() {
-        return adminService.deleteProcess()
+    @DeleteMapping("/process/{pid}")
+    public Mono<ResultVo> deleteProcess(@PathVariable("pid") String pid) {
+        return adminService.deleteProcess(pid)
                 .thenReturn(ResultVo.success(Code.SUCCESS))
                 .onErrorResume(err -> Mono.just(ResultVo.error(Code.ERROR,"删除失败" + err.getMessage())));
     }

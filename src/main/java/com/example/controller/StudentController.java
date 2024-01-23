@@ -116,4 +116,9 @@ public class StudentController {
         return studentService.getProcessById(pid)
                 .map(items -> ResultVo.success(Code.SUCCESS,Map.of("items",items)));
     }
+    @GetMapping("/score")
+    public Mono<ResultVo> getPSBySid(@RequestAttribute("number") String number) {
+        return studentService.getPsBySid(number)
+                .map(ps -> ResultVo.success(Code.SUCCESS,Map.of("processScore",ps)));
+    }
 }

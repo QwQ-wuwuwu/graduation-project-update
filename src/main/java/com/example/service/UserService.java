@@ -19,7 +19,6 @@ import java.util.List;
 public class UserService {
     private final PasswordEncodeComponent password;
     private final UserRepository userRepository;
-    private final StudentRepository studentRepository;
 
     public Mono<User> getUserByNumber(String number, Integer role) {
         return userRepository.getUserByNumber(number,role);

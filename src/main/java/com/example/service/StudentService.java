@@ -66,4 +66,8 @@ public class StudentService {
     public Mono<String> getProcessById(String pid) {
         return studentRepository.getByPid(pid);
     }
+    public Mono<List<ProcessScore>> getPsBySid(String number) {
+        return studentRepository.getSidByNumber(number)
+                .flatMap(sid -> studentRepository.getPsBySid(sid).collectList());
+    }
 }

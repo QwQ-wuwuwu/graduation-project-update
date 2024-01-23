@@ -18,6 +18,7 @@ import org.springframework.transaction.annotation.Transactional;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -40,7 +41,13 @@ public class AdminService {
     }
     @Transactional
     public Mono<Void> updateAllPassword() {
-        return userRepository.updateAllPassword();
+        return userRepository.findAll()
+                .flatMap(user -> {
+                    String number = user.getNumber();
+                    String encode = password.passwordEncoder().encode(number);
+                    userRepository.updatePassword(number,encode);
+                    return Mono.empty();
+                }).then();
     }
     @Transactional
     public Mono<Void> updatePasswordByUser(String number) {
@@ -57,9 +64,9 @@ public class AdminService {
         return processRepository.save(process);
     }
     @Transactional
-    /*@CacheEvict(value = "process", allEntries = true)*/
-    public Mono<Boolean> deleteProcess() {
-        return processRepository.deleteProcessBy();
+    @CacheEvict(value = "process", allEntries = true)
+    public Mono<Boolean> deleteProcess(String pid) {
+        return processRepository.deleteProcessBy(pid);
     }
     @Transactional
     public Mono<Void> postStudents(List<Student> students,int role) {

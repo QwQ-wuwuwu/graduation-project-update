@@ -48,4 +48,6 @@ public interface StudentRepository extends ReactiveCrudRepository<Student,String
     Mono<String> getProcessScore(@Param("sid") String sid, @Param("pid") String pid);
     @Query("select p.items from process p where p.id=:pid")
     Mono<String> getByPid(@Param("pid") String pid);
+    @Query("select * from process_score ps where ps.student_id=:sid")
+    Flux<ProcessScore> getPsBySid(@Param("sid") String sid);
 }
