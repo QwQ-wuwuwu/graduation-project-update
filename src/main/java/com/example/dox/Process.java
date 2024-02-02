@@ -23,7 +23,9 @@ public class Process {
     private String id;
     private String processName;
     private String items;
-    private Boolean confirm;
+    private Integer point;
+    private String auth;
+    private String studentAttach;
     @ReadOnlyProperty
     @JsonIgnore
     private LocalDateTime insertTime;

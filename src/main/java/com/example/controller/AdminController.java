@@ -5,6 +5,7 @@ import com.example.dox.Student;
 import com.example.dox.Teacher;
 import com.example.dox.User;
 import com.example.service.AdminService;
+import com.example.service.TeacherService;
 import com.example.service.UserService;
 import com.example.vo.Code;
 import com.example.vo.ResultVo;
@@ -23,6 +24,7 @@ import java.util.Map;
 public class AdminController {
     private final AdminService adminService;
     private final UserService userService;
+    private final TeacherService teacherService;
     @PutMapping("/time")
     public Mono<ResultVo> setTime(@RequestParam("start") @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm") LocalDateTime start,
                                   @RequestParam("end") @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm") LocalDateTime end) {
@@ -81,5 +83,38 @@ public class AdminController {
     public Mono<ResultVo> getPidAndName(@PathVariable("pid") String pid, @PathVariable("pname") String pname) {
         return Mono.just(ResultVo.success(Code.SUCCESS,Map.of("processId",pid,
                 "processName",pname)));
+    }
+    @GetMapping("/groups")
+    public Mono<ResultVo> getGroup() {
+        return teacherService.getAllGroup()
+                .map(list -> ResultVo.success(Code.SUCCESS,Map.of("groups",list)));
+    }
+    @GetMapping("/student/{gid}")
+    public Mono<ResultVo> getStudentsByGroup(@PathVariable("gid") Integer group) {
+        return adminService.getStudentsByGroup(group)
+                .map(list -> ResultVo.success(Code.SUCCESS, Map.of("students",list)));
+    }
+    @GetMapping("/students")
+    public Mono<ResultVo> getALlStudents() {
+        return adminService.getAllStudents()
+                .map(list -> ResultVo.success(Code.SUCCESS,Map.of("students",list)));
+    }
+    @PutMapping("/group/{sid}/{newGroup}")
+    public Mono<ResultVo> updateGroup(@PathVariable("sid") String sid, @PathVariable("newGroup") Integer newGroup) {
+        return adminService.updateGroup(sid,newGroup)
+                .map(i -> ResultVo.success(Code.SUCCESS))
+                .defaultIfEmpty(ResultVo.error(Code.ERROR,"更新失败"));
+    }
+    @PutMapping ("/group")
+    public Mono<ResultVo> postStudentsGroup(@RequestBody List<Student> students) {
+        return adminService.postStudentsGroup(students)
+                .map(list -> ResultVo.success(Code.SUCCESS,Map.of("students",list)))
+                .defaultIfEmpty(ResultVo.error(Code.ERROR,"更新失败"));
+    }
+    @PutMapping ("/projectTitle")
+    public Mono<ResultVo> postStudentsProjectTitle(@RequestBody List<Student> students) {
+        return adminService.postStudentsProjectTitle(students)
+                .map(list -> ResultVo.success(Code.SUCCESS,Map.of("students",list)))
+                .defaultIfEmpty(ResultVo.error(Code.ERROR,"更新失败"));
     }
 }

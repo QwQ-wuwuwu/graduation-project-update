@@ -15,4 +15,8 @@ explain (
         );
 select * from file f where f.student_number=2021213176 and f.process_id=1197424698199199744;
 select * from student s where s.teacher_id is null;
-select group_id from teacher
+select count(distinct t.group_id) from teacher t
+
+select * from student s where s.teacher_id=(select t.id from teacher t where t.number=1234567890);
+delete from process_score ps where ps.student_id=1200806189818007552 and ps.process_id=1201058859040460800;
+select * from process_score ps,teacher t where t.group_id=1 and ps.teacher_id=t.id;

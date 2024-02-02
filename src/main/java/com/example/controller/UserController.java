@@ -17,8 +17,8 @@ import java.util.Map;
 public class UserController {
     private final UserService userService;
     private final StudentService studentService;
-    @PutMapping("/password")
-    public Mono<ResultVo> updatePasswordByNumber(@RequestParam("newPw") String newPw, @RequestAttribute("number") String number) {
+    @PutMapping("/password/{newPw}")
+    public Mono<ResultVo> updatePasswordByNumber(@PathVariable("newPw") String newPw, @RequestAttribute("number") String number) {
         return userService.updatePasswordByNumber(number,newPw)
                 .thenReturn(ResultVo.success(Code.SUCCESS));
     }
@@ -26,5 +26,10 @@ public class UserController {
     public Mono<ResultVo> getProcessById(@PathVariable("pid") String pid) {
         return studentService.getProcessById(pid)
                 .map(items -> ResultVo.success(Code.SUCCESS, Map.of("items",items)));
+    }
+    @GetMapping("/process")
+    public Mono<ResultVo> listProcesses() {
+        return userService.listProcess()
+                .map(list -> ResultVo.success(Code.SUCCESS, Map.of("processes",list)));
     }
 }

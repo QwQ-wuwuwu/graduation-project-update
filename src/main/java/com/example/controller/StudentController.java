@@ -2,6 +2,7 @@ package com.example.controller;
 
 import com.example.dox.File;
 import com.example.dox.Teacher;
+import com.example.exception.XException;
 import com.example.pojo.StartAndEndTime;
 import com.example.service.StudentService;
 import com.example.service.UserService;
@@ -51,7 +52,10 @@ public class StudentController {
                     return studentService.getStudentByNumber(number)
                             .flatMap(s -> allTeacher.map(ts ->
                                     ResultVo.success(Code.SUCCESS, Map.of("teachers",ts))))
-                            .defaultIfEmpty(ResultVo.error(Code.ERROR,"已选导师,不可再选"));
+                            .switchIfEmpty(Mono.defer(() -> studentService.getStudent(number)
+                                    .map(s -> ResultVo.builder().code(Code.ERROR)
+                                            .message("已选导师不可再选！")
+                                            .data(Map.of("student",s)).build())));
                 });
     }
     @GetMapping("/group")
@@ -59,22 +63,26 @@ public class StudentController {
         return studentService.countOfGroup()
                 .map(count -> ResultVo.success(Code.SUCCESS, Map.of("group",count)));
     }
-    @PutMapping("/tutors/{tid}/{group}")
-    public Mono<ResultVo> putSelection(@PathVariable("tid") String tid, @PathVariable("group") Integer groupId,
+    @PutMapping("/tutors/{tid}/{tname}")
+    public Mono<ResultVo> putSelection(@PathVariable("tid") String tid, @PathVariable("tname") String tname,
                                        @RequestAttribute("number") String number) {
-        return studentService.selectTeacher(tid,number,groupId)
-                .thenReturn(ResultVo.success(Code.SUCCESS));
+        return studentService.selectTeacher(tid, number, tname)
+                .thenReturn(ResultVo.success(Code.SUCCESS))
+                .onErrorResume(XException.class, x -> Mono.just(ResultVo.builder()
+                        .code(x.getCode())
+                        .message(x.getMessage())
+                        .build()));
     }
     @GetMapping("/process")
     public Mono<ResultVo> getAllProcess() {
-        return userService.listProcess()
+        return studentService.getAttachProcess()
                 .map(ps -> ResultVo.success(Code.SUCCESS,Map.of("processes",ps)));
     }
-    @PostMapping("/upload/{pid}/{pname}")
+    @PostMapping("/upload/{pid}/{pname}/{numberS}")
     public Mono<ResultVo> postFile(@PathVariable("pid") String pid, @PathVariable("pname") String pname,
-                                   @RequestAttribute("number") String number,
+                                   @RequestAttribute("number") String number, @PathVariable("numberS") Integer numberS,
                                    @RequestPart("file") Mono<FilePart> file) {
-        return studentService.findByNumberAndPid(number, pid)
+        return studentService.findByNumberAndPid(number, pid, numberS)
                 .flatMap(f -> file.flatMap(filePart -> {
                     Path p1 = Path.of(uploadDirectory).resolve(Path.of(f.getDetail()));
                     String detail = Path.of(pname).resolve(filePart.filename()).toString();
@@ -82,13 +90,14 @@ public class StudentController {
                     return Mono.deferContextual(ctx -> Mono.fromCallable(() -> Files.deleteIfExists(p1)) //deferContextual返回一个可以访问上下文的Mono
                             .subscribeOn(Schedulers.boundedElastic())
                             .then(Mono.defer(() -> filePart.transferTo(p2.resolve(filePart.filename()))))
-                            .then(Mono.defer(() -> studentService.updateFile(number, pid, detail)))
+                            .then(Mono.defer(() -> studentService.updateFile(number, pid, detail, numberS)))
                             .thenReturn(ResultVo.success(Code.SUCCESS)));
                 }))
                 .switchIfEmpty(Mono.defer(() -> file.flatMap(filePart -> {
                     File pf = File.builder()
                             .processId(pid)
                             .studentNumber(number)
+                            .number(numberS)
                             .detail(Path.of(pname).resolve(filePart.filename()).toString())
                             .build();
                     Path p = Path.of(uploadDirectory).resolve(pname);
@@ -103,22 +112,9 @@ public class StudentController {
                 })))
                 .onErrorResume(err -> Mono.just(ResultVo.error(Code.ERROR, "文件保存失败")));
     }
-    @GetMapping("/score/{pid}")
-    public Mono<ResultVo> getProcess_score(@RequestAttribute("number") String number, @PathVariable("pid") String pid) {
-        System.out.println(number);
-        return studentService.getSidByNumber(number)
-                .flatMap(sid -> studentService.getProcessScore(sid,pid)
-                        .map(ps -> ResultVo.success(Code.SUCCESS,Map.of("processScore",ps)))
-                        .defaultIfEmpty(ResultVo.error(Code.ERROR,"该阶段未进行评分")));
-    }
-    @GetMapping("/process/{pid}")
-    public Mono<ResultVo> getProcessById(@PathVariable("pid") String pid) {
-        return studentService.getProcessById(pid)
-                .map(items -> ResultVo.success(Code.SUCCESS,Map.of("items",items)));
-    }
-    @GetMapping("/score")
-    public Mono<ResultVo> getPSBySid(@RequestAttribute("number") String number) {
-        return studentService.getPsBySid(number)
-                .map(ps -> ResultVo.success(Code.SUCCESS,Map.of("processScore",ps)));
+    @GetMapping("/files")
+    public Mono<ResultVo> getFilesByStu(@RequestAttribute("number") String number) {
+        return studentService.getFilesByStu(number)
+                .map(files -> ResultVo.success(Code.SUCCESS, Map.of("files",files)));
     }
 }

@@ -23,6 +23,8 @@ public class Student {
     private Integer groupId;
     private String projectTitle;
     private String teacherId;
+    private String teacherName;
+    private Integer queueNumber;
     @ReadOnlyProperty
     private LocalDateTime insertTime;
     @ReadOnlyProperty

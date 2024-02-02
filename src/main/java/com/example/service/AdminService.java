@@ -15,10 +15,8 @@ import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
-import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -94,5 +92,24 @@ public class AdminService {
         }
         userRepository.saveAll(users).collectList().block();
         return teacherRepository.saveAll(teachers).then();
+    }
+    public Mono<List<Student>> getStudentsByGroup(Integer group) {
+        return studentRepository.getStudentsByGroup(group).collectList().cache();
+    }
+    public Mono<List<Student>> getAllStudents() {
+        return studentRepository.findAll().collectList().cache();
+    }
+    @Transactional
+    public Mono<Integer> updateGroup(String sid, int group) {
+        return studentRepository.updateGroup(sid,group);
+    }
+    @Transactional
+    public Mono<List<Student>> postStudentsGroup(List<Student> students) {
+        return studentRepository.saveAll(students).collectList();
+    }
+    @Transactional
+    public Mono<List<Student>> postStudentsProjectTitle(List<Student> students) {
+        return studentRepository.saveAll(students).collectList();
+
     }
 }

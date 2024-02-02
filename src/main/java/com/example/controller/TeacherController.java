@@ -2,7 +2,6 @@ package com.example.controller;
 
 import com.example.dox.ProcessScore;
 import com.example.service.TeacherService;
-import com.example.service.UserService;
 import com.example.vo.Code;
 import com.example.vo.ResultVo;
 import lombok.RequiredArgsConstructor;
@@ -16,7 +15,6 @@ import org.springframework.http.server.reactive.ServerHttpResponse;
 import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
-import reactor.util.retry.Retry;
 
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
@@ -28,7 +26,6 @@ import java.util.Map;
 @RequestMapping("/api/teacher")
 public class TeacherController {
     private final TeacherService teacherService;
-    private final UserService userService;
     @Value("${my.upload}")
     private String uploadDirectory;
     @GetMapping("/student")
@@ -42,16 +39,10 @@ public class TeacherController {
         return teacherService.getUnselectStudents()
                 .map(s -> ResultVo.success(Code.SUCCESS,Map.of("students",s)));
     }
-    @GetMapping("/file/{pid}/{number}")
-    public Mono<ResultVo> getFileByPid(@PathVariable("pid") String pid, @PathVariable("number") String number) {
-        return teacherService.getFileByPid(pid,number)
-                .map(f -> ResultVo.success(Code.SUCCESS,Map.of("file",f)))
-                .defaultIfEmpty(ResultVo.error(Code.ERROR,"该阶段未上传文件"));
-    }
-    @GetMapping("/download/{pid}/{number}")
+    @GetMapping("/download/{pid}/{number}/{PNumber}")
     public Mono<Void> download(@PathVariable("pid") String pid, @PathVariable("number") String number,
-                               ServerHttpResponse response) {
-        return teacherService.getFileByPid(pid,number)
+                               @PathVariable("PNumber") Integer PNumber, ServerHttpResponse response) {
+        return teacherService.getFileByPid(pid,number,PNumber)
                 .flatMap(f -> {
                     Path detail = Path.of(f.getDetail());
                     Path path = Path.of(uploadDirectory).resolve(detail);
@@ -69,43 +60,73 @@ public class TeacherController {
                     * */
                     headers.setContentDispositionFormData("attachment", name);
                     return response.writeWith(read);
-                }).then();
+                })
+                .then();
     }
-    @GetMapping("/group/{pid}")
-    public Mono<ResultVo> getByGroup(@RequestAttribute("number") String number, @PathVariable("pid") String pid) {
+    @GetMapping("/group/{auth}")
+    public Mono<ResultVo> getByGroup(@RequestAttribute("number") String number, @PathVariable("auth") String auth) {
+        if (auth.equals("audit")) {
+            return teacherService.getGroup(number)
+                    .flatMap(group -> teacherService.getByGroup(group)
+                            .map(students -> ResultVo.success(Code.SUCCESS,Map.of("students",students)))
+                    );
+        }
+        return teacherService.getStudentsByAuth(number)
+                .map(students -> ResultVo.success(Code.SUCCESS, Map.of("students",students)));
+    }
+    @GetMapping("/student/group")
+    public Mono<ResultVo> getStudentsByGroup(@RequestAttribute("number") String number) {
         return teacherService.getGroup(number)
                 .flatMap(group -> teacherService.getByGroup(group)
-                        .flatMap(students -> teacherService.getByPid(pid)
-                                .map(items -> ResultVo.success(Code.SUCCESS,Map.of("items",items,
-                                        "students",students)))
+                        .map(students -> ResultVo.success(Code.SUCCESS,Map.of("students",students)))
+                );
+    }
+    @GetMapping("/processScore/{pid}/{sid}/{tid}")
+    public Mono<ResultVo> scoreOrGetInfo(@PathVariable("pid") String pid, @PathVariable("sid") String sid,
+                                         @PathVariable("tid") String tid) {
+        return teacherService.getProcessScore(sid,pid,tid)
+                .flatMap(ps -> teacherService.getProcessScores(sid, pid)
+                        .map(pSs -> ResultVo.success(Code.SUCCESS, Map.of("flag",1,
+                                "processScores",pSs)))
+                )
+                .switchIfEmpty(Mono.defer(() -> teacherService.getStudentById(sid)
+                        .map(s -> ResultVo.success(Code.SUCCESS,Map.of("student",s)))
                         )
                 );
     }
-    @GetMapping("name")
-    public Mono<ResultVo> getTNameByNumber(@RequestAttribute("number") String number) {
-        return teacherService.getTNameByNumber(number)
-                .map(name -> ResultVo.success(Code.SUCCESS,Map.of("name",name)));
+    @GetMapping("/processScore/{pid}/{tid}")
+    public Mono<ResultVo> getProcessScoreByPidAndTid(@PathVariable("pid") String pid, @PathVariable("tid") String tid) {
+        return teacherService.getProcessScoresByPidAndTid(tid,pid)
+                .map(list -> ResultVo.success(Code.SUCCESS, Map.of("processScores",list)));
+    }
+    @GetMapping("/file/{pid}/{number}/{PNumber}")
+    public Mono<ResultVo> getFile(@PathVariable("pid")String pid, @PathVariable("number") String number,
+                                  @PathVariable("PNumber") Integer PNumber) {
+        return teacherService.getFile(pid,number,PNumber)
+                .map(file -> ResultVo.success(Code.SUCCESS,Map.of("file",file)));
     }
     @PostMapping ("/processScore")
     public Mono<ResultVo> postProcessScore(@RequestBody ProcessScore processScore) {
-        String sid = processScore.getStudentId();
-        String pid = processScore.getProcessId();
-        return teacherService.getPsBySidAndPid(sid,pid)
-                .map(ps -> ResultVo.builder()
-                        .code(Code.ERROR)
-                        .message("该同学已评分，您添加的分数作废")
-                        .data(Map.of("processScore",ps)).build())
-                .switchIfEmpty(Mono.defer(() -> teacherService.postProcessScore(processScore)
-                        .thenReturn(ResultVo.success(Code.SUCCESS))));
+        return teacherService.postProcessScore(processScore)
+                .thenReturn(ResultVo.success(Code.SUCCESS));
     }
-    @GetMapping("/groups")
-    public Mono<ResultVo> getAllGroup() {
-        return teacherService.getAllGroup()
-                .map(list -> ResultVo.success(Code.SUCCESS,Map.of("groups",list)));
+    @DeleteMapping("/processScore/{pid}/{sid}/{tid}")
+    public Mono<ResultVo> deleteProcessScore(@PathVariable("pid") String pid, @PathVariable("sid") String sid,
+                                             @PathVariable("tid") String tid) {
+        return teacherService.deleteProcessScore(pid,sid,tid)
+                .map(r -> ResultVo.success(Code.SUCCESS))
+                .onErrorReturn(ResultVo.error(Code.ERROR,"删除失败"));
     }
-    @GetMapping("/teacher/{group}")
-    public Mono<ResultVo> getTeachersByGroup(@PathVariable("group") Integer group) {
-        return teacherService.getTeachersByGroup(group)
-                .map(ts -> ResultVo.success(Code.SUCCESS,Map.of("teachers",ts)));
+    @GetMapping("/teacher")
+    public Mono<ResultVo> getTeachersByGroup(@RequestAttribute("number") String number) {
+        return teacherService.getGroup(number)
+                .flatMap(group -> teacherService.getTeachersByGroup(group)
+                        .map(ts -> ResultVo.success(Code.SUCCESS,Map.of("teachers",ts)))
+                );
+    }
+    @GetMapping("/processScores")
+    public Mono<ResultVo> getAllProcessScores() {
+        return teacherService.getAllProcessScores()
+                .map(list -> ResultVo.success(Code.SUCCESS,Map.of("processScores",list)));
     }
 }

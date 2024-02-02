@@ -21,6 +21,7 @@ public class ProcessScore {
     private String id;
     private String studentId;
     private String processId;
+    private String teacherId;
     private String detail;
     @ReadOnlyProperty
     @JsonIgnore

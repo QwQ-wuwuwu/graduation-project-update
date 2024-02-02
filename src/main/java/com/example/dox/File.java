@@ -24,6 +24,7 @@ public class File {
     private String studentNumber;
     private String detail;
     private String processId;
+    private Integer number;
     @ReadOnlyProperty
     @JsonIgnore
     private LocalDateTime insertTime;
