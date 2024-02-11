@@ -117,4 +117,9 @@ public class AdminController {
                 .map(list -> ResultVo.success(Code.SUCCESS,Map.of("students",list)))
                 .defaultIfEmpty(ResultVo.error(Code.ERROR,"更新失败"));
     }
+    @GetMapping("teachers")
+    public Mono<ResultVo> getAllTeachers() {
+        return adminService.getAllTeacher()
+                .map(list -> ResultVo.success(Code.SUCCESS,Map.of("teachers",list)));
+    }
 }

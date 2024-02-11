@@ -129,4 +129,15 @@ public class TeacherController {
         return teacherService.getAllProcessScores()
                 .map(list -> ResultVo.success(Code.SUCCESS,Map.of("processScores",list)));
     }
+    @GetMapping("/processScores/{pid}")
+    public Mono<ResultVo> getProcessScoresByPidAndGid(@RequestAttribute("number") String number, @PathVariable("pid") String pid) {
+        return teacherService.getGroup(number)
+                .flatMap(gid -> teacherService.getProcessScoresByPidAndGid(gid,pid)
+                        .map(list -> ResultVo.success(Code.SUCCESS,Map.of("processScores",list))));
+    }
+    @GetMapping("/files")
+    public Mono<ResultVo> getAllFiles() {
+        return teacherService.getAllFile()
+                .map(list -> ResultVo.success(Code.SUCCESS,Map.of("files",list)));
+    }
 }

@@ -4,6 +4,7 @@ import com.example.dox.File;
 import com.example.dox.ProcessScore;
 import com.example.dox.Student;
 import com.example.dox.Teacher;
+import com.example.repository.FileRepository;
 import com.example.repository.ProcessScoreRepository;
 import com.example.repository.TeacherRepository;
 import lombok.RequiredArgsConstructor;
@@ -73,5 +74,12 @@ public class TeacherService {
     @Transactional
     public Mono<Integer> deleteProcessScore(String pid, String sid, String tid) {
         return teacherRepository.deleteProcessScore(pid,sid,tid);
+    }
+    public Mono<List<ProcessScore>> getProcessScoresByPidAndGid(int gid,String pid) {
+        return processScoreRepository.getProcessScoreByPidAndGid(gid,pid).collectList().cache();
+    }
+    private final FileRepository fileRepository;
+    public Mono<List<File>> getAllFile() {
+        return fileRepository.findAll().collectList().cache();
     }
 }

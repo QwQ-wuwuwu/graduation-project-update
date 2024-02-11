@@ -110,6 +110,8 @@ public class AdminService {
     @Transactional
     public Mono<List<Student>> postStudentsProjectTitle(List<Student> students) {
         return studentRepository.saveAll(students).collectList();
-
+    }
+    public Mono<List<Teacher>> getAllTeacher() {
+        return teacherRepository.findAll().collectList().cache();
     }
 }
