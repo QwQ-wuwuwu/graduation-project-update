@@ -5,7 +5,6 @@ import com.example.dox.Teacher;
 import com.example.exception.XException;
 import com.example.pojo.StartAndEndTime;
 import com.example.service.StudentService;
-import com.example.service.UserService;
 import com.example.vo.Code;
 import com.example.vo.ResultVo;
 import lombok.RequiredArgsConstructor;
@@ -29,7 +28,6 @@ import java.util.Map;
 public class StudentController {
     private final StudentService studentService;
     private final StartAndEndTime time;
-    private final UserService userService;
     @Value("${my.upload}")
     private String uploadDirectory;
     @GetMapping("/info")
@@ -78,6 +76,11 @@ public class StudentController {
         return studentService.getAttachProcess()
                 .map(ps -> ResultVo.success(Code.SUCCESS,Map.of("processes",ps)));
     }
+    @GetMapping("/student")
+    public Mono<ResultVo> getStudent(@RequestAttribute("number") String number) {
+        return studentService.getStudent(number)
+                .map(s -> ResultVo.success(Code.SUCCESS,Map.of("student",s)));
+    }
     @PostMapping("/upload/{pid}/{pname}/{numberS}")
     public Mono<ResultVo> postFile(@PathVariable("pid") String pid, @PathVariable("pname") String pname,
                                    @RequestAttribute("number") String number, @PathVariable("numberS") Integer numberS,
@@ -94,6 +97,7 @@ public class StudentController {
                             .thenReturn(ResultVo.success(Code.SUCCESS)));
                 }))
                 .switchIfEmpty(Mono.defer(() -> file.flatMap(filePart -> {
+                    System.out.println(filePart.filename());
                     File pf = File.builder()
                             .processId(pid)
                             .studentNumber(number)

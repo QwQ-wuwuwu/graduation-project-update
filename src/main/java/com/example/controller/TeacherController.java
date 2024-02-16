@@ -89,33 +89,28 @@ public class TeacherController {
                         .map(pSs -> ResultVo.success(Code.SUCCESS, Map.of("flag",1,
                                 "processScores",pSs)))
                 )
-                .switchIfEmpty(Mono.defer(() -> teacherService.getStudentById(sid)
-                        .map(s -> ResultVo.success(Code.SUCCESS,Map.of("student",s)))
-                        )
-                );
+                .defaultIfEmpty(ResultVo.error(Code.ERROR));
     }
     @GetMapping("/processScore/{pid}/{tid}")
     public Mono<ResultVo> getProcessScoreByPidAndTid(@PathVariable("pid") String pid, @PathVariable("tid") String tid) {
         return teacherService.getProcessScoresByPidAndTid(tid,pid)
                 .map(list -> ResultVo.success(Code.SUCCESS, Map.of("processScores",list)));
     }
-    @GetMapping("/file/{pid}/{number}/{PNumber}")
-    public Mono<ResultVo> getFile(@PathVariable("pid")String pid, @PathVariable("number") String number,
-                                  @PathVariable("PNumber") Integer PNumber) {
-        return teacherService.getFile(pid,number,PNumber)
-                .map(file -> ResultVo.success(Code.SUCCESS,Map.of("file",file)));
-    }
     @PostMapping ("/processScore")
     public Mono<ResultVo> postProcessScore(@RequestBody ProcessScore processScore) {
-        return teacherService.postProcessScore(processScore)
-                .thenReturn(ResultVo.success(Code.SUCCESS));
-    }
-    @DeleteMapping("/processScore/{pid}/{sid}/{tid}")
-    public Mono<ResultVo> deleteProcessScore(@PathVariable("pid") String pid, @PathVariable("sid") String sid,
-                                             @PathVariable("tid") String tid) {
-        return teacherService.deleteProcessScore(pid,sid,tid)
-                .map(r -> ResultVo.success(Code.SUCCESS))
-                .onErrorReturn(ResultVo.error(Code.ERROR,"删除失败"));
+        String tid = processScore.getTeacherId();
+        String pid = processScore.getProcessId();
+        return teacherService.getOnlyProcessScore(processScore)
+                .flatMap(ps -> teacherService.updateProcessScore(processScore)
+                        .flatMap(x -> teacherService.getProcessScoresByPidAndTid(tid,pid)
+                                .map(list -> ResultVo.success(Code.SUCCESS, Map.of("processScores",list)))
+                        )
+                )
+                .switchIfEmpty(Mono.defer(() -> teacherService.postProcessScore(processScore)
+                        .flatMap(x -> teacherService.getProcessScoresByPidAndTid(tid,pid)
+                                .map(list -> ResultVo.success(Code.SUCCESS, Map.of("processScores",list)))
+                        )
+                ));
     }
     @GetMapping("/teacher")
     public Mono<ResultVo> getTeachersByGroup(@RequestAttribute("number") String number) {
@@ -129,15 +124,9 @@ public class TeacherController {
         return teacherService.getAllProcessScores()
                 .map(list -> ResultVo.success(Code.SUCCESS,Map.of("processScores",list)));
     }
-    @GetMapping("/processScores/{pid}")
-    public Mono<ResultVo> getProcessScoresByPidAndGid(@RequestAttribute("number") String number, @PathVariable("pid") String pid) {
-        return teacherService.getGroup(number)
-                .flatMap(gid -> teacherService.getProcessScoresByPidAndGid(gid,pid)
-                        .map(list -> ResultVo.success(Code.SUCCESS,Map.of("processScores",list))));
-    }
-    @GetMapping("/files")
-    public Mono<ResultVo> getAllFiles() {
-        return teacherService.getAllFile()
+    @GetMapping("/files/{pid}")
+    public Mono<ResultVo> getAllFiles(@PathVariable("pid") String pid) {
+        return teacherService.getAllFile(pid)
                 .map(list -> ResultVo.success(Code.SUCCESS,Map.of("files",list)));
     }
 }

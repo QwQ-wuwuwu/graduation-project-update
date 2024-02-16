@@ -29,9 +29,6 @@ public class TeacherService {
     public Mono<File> getFileByPid(String pid, String number,int PNumber) {
         return teacherRepository.getFileByPidAndNumber(pid,number,PNumber);
     }
-    public Mono<File> getFile(String pid, String number, int PNumber) {
-        return teacherRepository.getFile(pid,number,PNumber);
-    }
     public Mono<List<Student>> getUnselectStudents() {
         return teacherRepository.getUnselectStudents().collectList();
     }
@@ -48,11 +45,8 @@ public class TeacherService {
     public Mono<List<ProcessScore>> getAllProcessScores() {
         return processScoreRepository.findAll().collectList();
     }
-    public Mono<Void> postProcessScore(ProcessScore processScore) {
-        return processScoreRepository.save(processScore).then();
-    }
-    public Mono<Student> getStudentById(String sid) {
-        return teacherRepository.getStudentById(sid);
+    public Mono<ProcessScore> postProcessScore(ProcessScore processScore) {
+        return processScoreRepository.save(processScore);
     }
     public Mono<ProcessScore> getProcessScore(String sid,String pid,String tid) {
         return teacherRepository.getProcessScore(sid,pid,tid);
@@ -71,15 +65,21 @@ public class TeacherService {
     public Mono<List<Teacher>> getTeachersByGroup(int groupId) {
         return teacherRepository.getTeachersByGroup(groupId).collectList().cache();
     }
-    @Transactional
-    public Mono<Integer> deleteProcessScore(String pid, String sid, String tid) {
-        return teacherRepository.deleteProcessScore(pid,sid,tid);
-    }
-    public Mono<List<ProcessScore>> getProcessScoresByPidAndGid(int gid,String pid) {
-        return processScoreRepository.getProcessScoreByPidAndGid(gid,pid).collectList().cache();
-    }
     private final FileRepository fileRepository;
-    public Mono<List<File>> getAllFile() {
-        return fileRepository.findAll().collectList().cache();
+    public Mono<List<File>> getAllFile(String pid) {
+        return fileRepository.getFilesByPid(pid).collectList().cache();
+    }
+    public Mono<ProcessScore> getOnlyProcessScore(ProcessScore processScore) {
+        String pid = processScore.getProcessId();
+        String sid = processScore.getStudentId();
+        String tid = processScore.getTeacherId();
+        return processScoreRepository.getOnlyProcessScore(pid,sid,tid);
+    }
+    @Transactional
+    public Mono<Integer> updateProcessScore(ProcessScore processScore) {
+        String pid = processScore.getProcessId();
+        String sid = processScore.getStudentId();
+        String tid = processScore.getTeacherId();
+        return processScoreRepository.updateProcessScore(pid,sid,tid,processScore.getDetail());
     }
 }
