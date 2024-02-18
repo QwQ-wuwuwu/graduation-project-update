@@ -57,6 +57,9 @@ public class TeacherService {
     public Mono<List<ProcessScore>> getProcessScoresByPidAndTid(String tid,String pid) {
         return teacherRepository.getProcessScoresByPidAndTid(tid,pid).collectList();
     }
+    public Mono<List<ProcessScore>> getProcessScoresByPidAndGid(String pid,int gid) {
+        return processScoreRepository.getProcessScoreByPidAndGid(gid,pid).collectList().cache();
+    }
     @Cacheable(value = "groups")
     public Mono<List<Integer>> getAllGroup() {
         return teacherRepository.getAllGroup().collectList().cache();

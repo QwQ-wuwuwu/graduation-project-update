@@ -24,6 +24,7 @@ public class InitService {
                     if (r == 0) {
                         User build = User.builder()
                                 .number(admin)
+                                .name(admin)
                                 .password(passwordEncodeComponent.passwordEncoder().encode(admin))
                                 .role(User.ROLE_ADMIN)
                                 .build();

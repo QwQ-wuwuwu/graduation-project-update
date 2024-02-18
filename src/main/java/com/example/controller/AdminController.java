@@ -117,6 +117,11 @@ public class AdminController {
                 .map(list -> ResultVo.success(Code.SUCCESS,Map.of("students",list)))
                 .defaultIfEmpty(ResultVo.error(Code.ERROR,"更新失败"));
     }
+    @PutMapping("/selection")
+    public Mono<ResultVo> putStudentsAndTeachers(@RequestBody List<Student> students) {
+        return adminService.postStudentsGroup(students)
+                        .map(slist -> ResultVo.success(Code.SUCCESS,Map.of("students",slist)));
+    }
     @GetMapping("teachers")
     public Mono<ResultVo> getAllTeachers() {
         return adminService.getAllTeacher()

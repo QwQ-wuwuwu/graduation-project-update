@@ -19,8 +19,9 @@ public class Teacher {
     private String name;
     private String number;
     private Integer total;
-    private Integer leftSelect;
     private Integer groupId;
+    private Integer groupA;
+    private Integer groupC;
     @ReadOnlyProperty
     @JsonIgnore
     private LocalDateTime insertTime;

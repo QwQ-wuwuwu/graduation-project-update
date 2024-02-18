@@ -2,6 +2,7 @@ use `zgj`;
 create table if not exists `user`(
     id char(19) primary key,
     number char(10) not null unique,
+    name varchar(20) not null,
     password varchar(64) not null,
     role int not null,
     insert_time datetime not null default CURRENT_TIMESTAMP,
@@ -13,8 +14,9 @@ create table if not exists `teacher` (
     number char(10) not null unique,
     name varchar(20) not null,
     total int not null,
-    left_select int not null,
     group_id int not null , /*老师所在的评审小组*/
+    group_a tinyint not null,
+    group_c tinyint not null,
     insert_time datetime not null default CURRENT_TIMESTAMP,
     update_time datetime not null default CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     foreign key(number) references `user`(number),

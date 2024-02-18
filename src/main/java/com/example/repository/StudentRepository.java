@@ -16,7 +16,7 @@ import java.time.LocalDateTime;
 
 @Repository
 public interface StudentRepository extends ReactiveCrudRepository<Student,String> {
-    @Query("select * from teacher t where t.left_select > 0 for update ") // 悲观锁
+    @Query("select * from teacher t where t.total > 0 for update ") // 悲观锁
     Flux<Teacher> getAllTeachers();
     @Query("select * from student s where s.teacher_id is null and s.number=:number")
     Mono<Student> getStudentByNumber(@Param("number") String number);
@@ -32,7 +32,7 @@ public interface StudentRepository extends ReactiveCrudRepository<Student,String
                                 @Param("selectTime")LocalDateTime selectTime,
                                 @Param("groupId") int groupId, @Param("tname") String tname);
     @Modifying
-    @Query("update teacher t set t.left_select=t.left_select-1 where t.id=:tid and t.left_select > 0")
+    @Query("update teacher t set t.total=t.total-1 where t.id=:tid and t.total > 0")
     Mono<Integer> selectTeacher(@Param("tid") String tid);
     @Query("select count(distinct t.group_id) from teacher t ")
     Mono<Integer> countOfGroup();

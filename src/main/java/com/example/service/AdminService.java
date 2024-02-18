@@ -72,6 +72,7 @@ public class AdminService {
         for (Student student : students) {
             User user = new User();
             user.setNumber(student.getNumber());
+            user.setName(student.getName());
             user.setPassword(password.passwordEncoder().encode(student.getNumber()));
             user.setRole(role);
             users.add(user);
@@ -86,6 +87,7 @@ public class AdminService {
         for (Teacher teacher : teachers) {
             User user = new User();
             user.setNumber(teacher.getNumber());
+            user.setName(teacher.getName());
             user.setPassword(password.passwordEncoder().encode(teacher.getNumber()));
             user.setRole(role);
             users.add(user);

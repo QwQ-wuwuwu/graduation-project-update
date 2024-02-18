@@ -91,10 +91,12 @@ public class TeacherController {
                 )
                 .defaultIfEmpty(ResultVo.error(Code.ERROR));
     }
-    @GetMapping("/processScore/{pid}/{tid}")
-    public Mono<ResultVo> getProcessScoreByPidAndTid(@PathVariable("pid") String pid, @PathVariable("tid") String tid) {
-        return teacherService.getProcessScoresByPidAndTid(tid,pid)
-                .map(list -> ResultVo.success(Code.SUCCESS, Map.of("processScores",list)));
+    @GetMapping("/processScores/{pid}")
+    public Mono<ResultVo> getProcessScoresByPidAndGid(@PathVariable("pid") String pid, @RequestAttribute("number") String number) {
+        return teacherService.getGroup(number)
+                .flatMap(g -> teacherService.getProcessScoresByPidAndGid(pid,g)
+                        .map(list -> ResultVo.success(Code.SUCCESS,Map.of("processScores",list)))
+                );
     }
     @PostMapping ("/processScore")
     public Mono<ResultVo> postProcessScore(@RequestBody ProcessScore processScore) {
