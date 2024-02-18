@@ -99,18 +99,22 @@ public class TeacherController {
                 );
     }
     @PostMapping ("/processScore")
-    public Mono<ResultVo> postProcessScore(@RequestBody ProcessScore processScore) {
+    public Mono<ResultVo> postProcessScore(@RequestBody ProcessScore processScore, @RequestAttribute("number") String number) {
         String tid = processScore.getTeacherId();
         String pid = processScore.getProcessId();
         return teacherService.getOnlyProcessScore(processScore)
                 .flatMap(ps -> teacherService.updateProcessScore(processScore)
-                        .flatMap(x -> teacherService.getProcessScoresByPidAndTid(tid,pid)
-                                .map(list -> ResultVo.success(Code.SUCCESS, Map.of("processScores",list)))
+                        .flatMap(x -> teacherService.getGroup(number)
+                                .flatMap(g -> teacherService.getProcessScoresByPidAndGid(pid,g)
+                                        .map(list -> ResultVo.success(Code.SUCCESS,Map.of("processScores",list)))
+                                )
                         )
                 )
                 .switchIfEmpty(Mono.defer(() -> teacherService.postProcessScore(processScore)
-                        .flatMap(x -> teacherService.getProcessScoresByPidAndTid(tid,pid)
-                                .map(list -> ResultVo.success(Code.SUCCESS, Map.of("processScores",list)))
+                        .flatMap(x -> teacherService.getGroup(number)
+                                .flatMap(g -> teacherService.getProcessScoresByPidAndGid(pid,g)
+                                        .map(list -> ResultVo.success(Code.SUCCESS,Map.of("processScores",list)))
+                                )
                         )
                 ));
     }
