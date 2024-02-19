@@ -20,8 +20,8 @@ public class UserService {
     private final PasswordEncodeComponent password;
     private final UserRepository userRepository;
 
-    public Mono<User> getUserByNumber(String number, Integer role) {
-        return userRepository.getUserByNumber(number,role);
+    public Mono<User> getUserByNumber(String number) {
+        return userRepository.getUserByNumber(number);
     }
     private final ProcessRepository processRepository;
     @Cacheable(value = "process")

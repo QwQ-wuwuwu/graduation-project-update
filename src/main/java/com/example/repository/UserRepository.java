@@ -12,8 +12,8 @@ import reactor.core.publisher.Mono;
 public interface UserRepository extends ReactiveCrudRepository<User,String> {
     @Query("select count(u.role) from user u where u.role = 2")
     Mono<Integer> getAdmin();
-    @Query("select * from user u where u.number=:number and u.role=:role")
-    Mono<User> getUserByNumber(@Param("number") String number, @Param("role") Integer role);
+    @Query("select * from user u where u.number=:number")
+    Mono<User> getUserByNumber(@Param("number") String number);
     @Modifying
     @Query("update user u set u.password=:newPw where u.number=:number")
     Mono<Void> updatePassword(@Param("number") String number, @Param("newPw") String pw);

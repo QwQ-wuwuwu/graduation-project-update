@@ -26,7 +26,7 @@ public class LoginController {
     private final JWTComponent jwtComponent;
     @PostMapping("/login")
     public Mono<ResultVo> login(@RequestBody Map<String,String> user, ServerWebExchange exchange) {
-        return userService.getUserByNumber(user.get("number"), Integer.parseInt(user.get("role")))
+        return userService.getUserByNumber(user.get("number"))
                 .filter(u -> encode.passwordEncoder().matches(user.get("password"),u.getPassword()))
                 .flatMap(u -> {
                     Map<String,Object> myToken = Map.of("id",u.getId(),

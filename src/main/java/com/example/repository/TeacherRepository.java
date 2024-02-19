@@ -16,8 +16,7 @@ import reactor.core.publisher.Mono;
 public interface TeacherRepository extends ReactiveCrudRepository<Teacher,String> {
     @Query("select * from student s where s.teacher_id=:tid")
     Flux<Student> getStudentsByTid(@Param("tid") String tid);
-    @Query("select t.id from teacher t where t.number=(" +
-            "select u.number from user u where u.id=:uid)")
+    @Query("select t.id from teacher t join user u on t.number=u.number and u.id=:uid")
     Mono<String> getTid(@Param("uid") String uid);
     @Query("select * from file f where f.process_id=:pid and f.student_number=:number and f.number=:PNumber")
     Mono<File> getFileByPidAndNumber(@Param("pid") String pid, @Param("number") String number, @Param("PNumber") int PNumber);
@@ -27,8 +26,7 @@ public interface TeacherRepository extends ReactiveCrudRepository<Teacher,String
     Flux<Student> getUnselectStudents();
     @Query("select * from student s where s.group_id=:group ")
     Flux<Student> getByGroup(@Param("group") int groupId);
-    @Query("select * from student s where s.teacher_id=(" +
-            "select t.id from teacher t where t.number=:number)")
+    @Query("select * from student s join teacher t on s.teacher_id=t.id and t.number=:number")
     Flux<Student> getStudentsByAuth(@Param("number") String number);
     @Query("select t.group_id from teacher t where t.number=:number")
     Mono<Integer> getGroup(@Param("number") String number);
@@ -47,5 +45,4 @@ public interface TeacherRepository extends ReactiveCrudRepository<Teacher,String
     @Modifying
     @Query("delete from process_score ps where ps.student_id=:sid and ps.process_id=:pid and ps.teacher_id=:tid")
     Mono<Integer> deleteProcessScore(@Param("pid") String pid, @Param("sid") String sid,@Param("tid") String tid);
-
 }
