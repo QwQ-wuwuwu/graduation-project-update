@@ -7,6 +7,7 @@ import com.example.repository.FileRepository;
 import com.example.repository.StudentRepository;
 import com.example.vo.Code;
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.annotation.Configuration;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import reactor.core.publisher.Mono;
