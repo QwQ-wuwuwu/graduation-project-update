@@ -27,4 +27,4 @@ select t.id from teacher t where t.number=(select u.number from user u where u.i
 explain(
     select t.id from teacher t join user u on t.number=u.number and u.id=1208646832200175616
        );
-select * from student s join teacher t on s.teacher_id=t.id and t.number=1000002214;
+select s.* from student s join teacher t on s.teacher_id=t.id and t.number=1000004037;

@@ -26,7 +26,7 @@ public interface TeacherRepository extends ReactiveCrudRepository<Teacher,String
     Flux<Student> getUnselectStudents();
     @Query("select * from student s where s.group_id=:group ")
     Flux<Student> getByGroup(@Param("group") int groupId);
-    @Query("select * from student s join teacher t on s.teacher_id=t.id and t.number=:number")
+    @Query("select s.* from student s join teacher t on s.teacher_id=t.id and t.number=:number")
     Flux<Student> getStudentsByAuth(@Param("number") String number);
     @Query("select t.group_id from teacher t where t.number=:number")
     Mono<Integer> getGroup(@Param("number") String number);
