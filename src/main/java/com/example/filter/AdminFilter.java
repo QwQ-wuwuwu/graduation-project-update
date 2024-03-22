@@ -3,6 +3,7 @@ package com.example.filter;
 import com.example.dox.User;
 import com.example.vo.Code;
 import lombok.RequiredArgsConstructor;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.core.annotation.Order;
 import org.springframework.http.server.PathContainer;
 import org.springframework.http.server.reactive.ServerHttpRequest;
@@ -21,7 +22,7 @@ public class AdminFilter implements WebFilter {
     private final PathPattern includes = new PathPatternParser().parse("/api/admin/**");
     private final ResponseHelper responseHelper;
     @Override
-    public Mono<Void> filter(ServerWebExchange exchange, WebFilterChain chain) {
+    public @NotNull Mono<Void> filter(ServerWebExchange exchange, @NotNull WebFilterChain chain) {
         ServerHttpRequest request = exchange.getRequest();
         PathContainer pathContainer = request.getPath().pathWithinApplication();
         if (includes.matches(pathContainer)) {

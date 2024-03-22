@@ -3,6 +3,7 @@ package com.example.filter;
 import com.example.dox.User;
 import com.example.vo.Code;
 import lombok.RequiredArgsConstructor;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.core.annotation.Order;
 import org.springframework.http.server.PathContainer;
 import org.springframework.stereotype.Component;
@@ -20,7 +21,7 @@ public class TeacherFilter implements WebFilter {
     private final PathPattern includes = new PathPatternParser().parse("/api/teacher/**");
     private final ResponseHelper responseHelper;
     @Override
-    public Mono<Void> filter(ServerWebExchange exchange, WebFilterChain chain) {
+    public @NotNull Mono<Void> filter(ServerWebExchange exchange, @NotNull WebFilterChain chain) {
         PathContainer pathContainer = exchange.getRequest().getPath().pathWithinApplication();
         if (includes.matches(pathContainer)) {
             int role = (int)exchange.getAttributes().get("role");

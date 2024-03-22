@@ -3,7 +3,9 @@ package com.example.filter;
 import com.example.component.JWTComponent;
 import com.example.exception.XException;
 import com.example.vo.Code;
+import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.core.annotation.Order;
 import org.springframework.http.server.PathContainer;
 import org.springframework.http.server.reactive.ServerHttpRequest;
@@ -26,7 +28,7 @@ public class LoginFilter implements WebFilter { // WebFlux框架中的filter本�
     private final JWTComponent jwtComponent;
     private final ResponseHelper responseHelper;
     @Override
-    public Mono<Void> filter(ServerWebExchange exchange, WebFilterChain chain) {
+    public @NotNull Mono<Void> filter(ServerWebExchange exchange, @NotNull WebFilterChain chain) {
         PathContainer pathContainer = exchange.getRequest().getPath().pathWithinApplication(); // 把路径放到容器里
         for (PathPattern exclude : excludes) {
             if (exclude.matches(pathContainer)) {
